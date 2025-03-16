@@ -1,40 +1,56 @@
 // src/components/AddQuestion.jsx
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Alert
+} from '@mui/material';
 
 function AddQuestion() {
   const [language, setLanguage] = useState('en');
   const [questionText, setQuestionText] = useState('');
-  const [options, setOptions] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [options, setOptions] = useState('["Yes","No"]'); // default example
+  const [imageFile, setImageFile] = useState(null);
+  const [alertMsg, setAlertMsg] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
-    const optionsArray = options.split(',').map(opt => opt.trim());
+    
+    // Use FormData for multipart/form-data
+    const formData = new FormData();
+    formData.append('language', language);
+    formData.append('question_text', questionText);
+    formData.append('options', options);
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+
     try {
       const res = await fetch('http://localhost:5011/api/admin/add-question', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+        headers: {
+          Authorization: `Bearer ${token}`
+          // Do NOT set 'Content-Type' to 'application/json' here, 
+          // fetch will set it to multipart/form-data automatically
         },
-        body: JSON.stringify({
-          language,
-          question_text: questionText,
-          options: optionsArray,
-          image_url: imageUrl
-        })
+        body: formData
       });
       const data = await res.json();
       if (data.success) {
-        alert('Question added successfully');
-        // Clear fields
+        setAlertMsg('Question added successfully!');
+        // Clear form
         setQuestionText('');
-        setOptions('');
-        setImageUrl('');
+        setOptions('["Yes","No"]');
+        setImageFile(null);
       } else {
-        alert('Failed to add question');
+        alert(data.error || 'Error adding question');
       }
     } catch (error) {
       console.error('Error adding question:', error);
@@ -46,13 +62,14 @@ function AddQuestion() {
       <Typography variant="h4" gutterBottom>
         Add New Question
       </Typography>
-      <form onSubmit={handleSubmit}>
+      {alertMsg && <Alert severity="success" sx={{ mb: 2 }}>{alertMsg}</Alert>}
+      <form onSubmit={handleSubmit} encType="multipart/form-data">
         <FormControl fullWidth sx={{ mb: 2 }}>
           <InputLabel id="language-select-label">Language</InputLabel>
           <Select
             labelId="language-select-label"
-            value={language}
             label="Language"
+            value={language}
             onChange={(e) => setLanguage(e.target.value)}
           >
             <MenuItem value="en">English</MenuItem>
@@ -70,20 +87,21 @@ function AddQuestion() {
         />
         <TextField
           fullWidth
-          label="Options (comma separated)"
+          label="Options"
           variant="outlined"
           sx={{ mb: 2 }}
           value={options}
           onChange={(e) => setOptions(e.target.value)}
           required
         />
-        <TextField
-          fullWidth
-          label="Image URL (optional)"
-          variant="outlined"
-          sx={{ mb: 2 }}
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
+        <Typography variant="body1" sx={{ mb: 1 }}>
+          Optional Image:
+        </Typography>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImageFile(e.target.files[0])}
+          style={{ marginBottom: '16px' }}
         />
         <Button variant="contained" type="submit">
           Add Question

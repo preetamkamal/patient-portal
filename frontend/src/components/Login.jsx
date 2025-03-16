@@ -1,6 +1,18 @@
 // src/components/Login.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
+} from '@mui/material';
 
 function Login() {
   const [role, setRole] = useState('patient');
@@ -19,45 +31,74 @@ function Login() {
       });
       const data = await response.json();
       if (data.success) {
-        // Save the token and the role
         localStorage.setItem('token', data.token);
         localStorage.setItem('role', role);
-        // Navigate
         navigate(role === 'admin' ? '/admin' : '/patient');
       } else {
         alert(data.message || 'Login failed');
       }
     } catch (error) {
       console.error('Error during login:', error);
-      alert('An error occurred during login. Please try again later.');
+      alert('An error occurred. Please try again later.');
     }
   };
 
   return (
-    <div style={{ margin: '100px auto', width: 300 }}>
-      <h2>Healer Login</h2>
-      <select value={role} onChange={(e) => setRole(e.target.value)}>
-        <option value="patient">Patient</option>
-        <option value="admin">Admin</option>
-      </select>
-      <form onSubmit={handleLogin}>
-        <input 
-          type="email" 
-          placeholder="Email" 
-          value={email} 
-          required 
-          onChange={(e) => setEmail(e.target.value)} 
-        />
-        <input 
-          type="password" 
-          placeholder="Password" 
-          value={password} 
-          required 
-          onChange={(e) => setPassword(e.target.value)} 
-        />
-        <button type="submit">Login</button>
-      </form>
-    </div>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        bgcolor: 'background.default',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: 2,
+      }}
+    >
+      <Card sx={{ width: { xs: '100%', sm: 400 }, p: 2 }}>
+        <CardContent>
+          <Typography variant="h4" textAlign="center" gutterBottom>
+            Healer Login
+          </Typography>
+          <Box component="form" onSubmit={handleLogin} noValidate>
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel id="role-select-label">Role</InputLabel>
+              <Select
+                labelId="role-select-label"
+                value={role}
+                label="Role"
+                onChange={(e) => setRole(e.target.value)}
+              >
+                <MenuItem value="patient">Patient</MenuItem>
+                <MenuItem value="admin">Admin</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              fullWidth
+              type="email"
+              label="Email"
+              variant="outlined"
+              sx={{ mb: 2 }}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <TextField
+              fullWidth
+              type="password"
+              label="Password"
+              variant="outlined"
+              sx={{ mb: 2 }}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <Button type="submit" variant="contained" fullWidth>
+              Login
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+    </Box>
   );
 }
 

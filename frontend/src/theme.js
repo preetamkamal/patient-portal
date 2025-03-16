@@ -4,7 +4,7 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#0a9396', // a teal-like color
+      main: '#0a9396', // Teal
     },
     secondary: {
       main: '#005f73',
@@ -15,7 +15,10 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: 'Inter, sans-serif',
+    fontFamily: 'Inter, Roboto, sans-serif',
+    h4: {
+      fontWeight: 600,
+    },
   },
 });
 

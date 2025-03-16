@@ -1,15 +1,51 @@
 // server.js
+// const express = require('express');
+// const bodyParser = require('body-parser');
+// const db = require('./db');
+// const cors = require('cors');
+// const jwt = require('jsonwebtoken');
+// const app = express();
+// const PORT = process.env.PORT || 5011;
+// const JWT_SECRET = "your_secret_key";  // Change to an env variable in production
+
+// app.use(cors());
+// app.use(bodyParser.json());
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const db = require('./db');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 const app = express();
 const PORT = process.env.PORT || 5011;
-const JWT_SECRET = "your_secret_key";  // Change to an env variable in production
+const JWT_SECRET = "your_secret_key";  // change for production
 
 app.use(cors());
 app.use(bodyParser.json());
+
+// Serve the "uploads" folder statically so clients can access the uploaded images
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Multer config: store files in "uploads/" with a unique filename
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = Date.now() + '-' + file.originalname;
+    cb(null, uniqueName);
+  }
+});
+const upload = multer({ storage });
 
 // Utility logging function
 function logAction(action, details) {
@@ -139,19 +175,51 @@ app.post('/api/admin/toggle-edit', authenticateToken, (req, res) => {
 });
 
 // Endpoint for admin to add a new question (with optional image)
-app.post('/api/admin/add-question', authenticateToken, (req, res) => {
-  if(req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
-  const { language, question_text, options, image_url } = req.body;
-  const query = 'INSERT INTO questions (language, question_text, options, image_url) VALUES (?,?,?,?)';
-  db.run(query, [language, question_text, JSON.stringify(options), image_url || null], function(err) {
-    if(err) {
-      res.status(500).json({ error: 'Database error' });
-    } else {
-      logAction('add question', `Admin added question: ${question_text}`);
-      res.json({ success: true, questionId: this.lastID });
+// app.post('/api/admin/add-question', authenticateToken, (req, res) => {
+//   if(req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+//   const { language, question_text, options, image_url } = req.body;
+//   const query = 'INSERT INTO questions (language, question_text, options, image_url) VALUES (?,?,?,?)';
+//   db.run(query, [language, question_text, JSON.stringify(options), image_url || null], function(err) {
+//     if(err) {
+//       res.status(500).json({ error: 'Database error' });
+//     } else {
+//       logAction('add question', `Admin added question: ${question_text}`);
+//       res.json({ success: true, questionId: this.lastID });
+//     }
+//   });
+// });
+
+app.post('/api/admin/add-question', authenticateToken, upload.single('image'), (req, res) => {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden' });
     }
+  
+    const { language, question_text, options } = req.body;
+    let image_url = null;
+  
+    // If an image was uploaded, store its path
+    if (req.file) {
+      image_url = '/uploads/' + req.file.filename; // The static path to the file
+    }
+  
+    // Convert options to a JSON string if needed
+    let parsedOptions;
+    try {
+      parsedOptions = JSON.stringify(JSON.parse(options)); 
+    } catch {
+      // If "options" is already a JSON string like ["Yes","No"], just use it directly
+      parsedOptions = options;
+    }
+  
+    const query = `INSERT INTO questions (language, question_text, options, image_url)
+                   VALUES (?, ?, ?, ?)`;
+    db.run(query, [language, question_text, parsedOptions, image_url], function (err) {
+      if (err) {
+        return res.status(500).json({ error: 'Database error' });
+      }
+      res.json({ success: true, questionId: this.lastID });
+    });
   });
-});
 
 // Endpoint for admin to view logs
 app.get('/api/admin/logs', authenticateToken, (req, res) => {
@@ -162,6 +230,159 @@ app.get('/api/admin/logs', authenticateToken, (req, res) => {
     else res.json(rows);
   });
 });
+
+// For admin to view responses:
+app.get('/api/admin/responses', authenticateToken, (req, res) => {
+    if (req.user.role !== 'admin')
+      return res.status(403).json({ error: 'Forbidden' });
+    const query = 'SELECT * FROM responses';
+    db.all(query, [], (err, rows) => {
+      if (err) res.status(500).json({ error: 'Database error' });
+      else res.json(rows);
+    });
+  });
+  
+  // For admin to update a patient’s response:
+  app.put('/api/admin/responses/:patientId', authenticateToken, (req, res) => {
+    if (req.user.role !== 'admin')
+      return res.status(403).json({ error: 'Forbidden' });
+    const { responses } = req.body;
+    const patientId = req.params.patientId;
+    const query = 'UPDATE responses SET responses = ? WHERE patient_id = ?';
+    db.run(query, [JSON.stringify(responses), patientId], function (err) {
+      if (err) res.status(500).json({ error: 'Database error' });
+      else {
+        logAction('admin update response', `Admin updated response for patient ${patientId}`);
+        res.json({ success: true });
+      }
+    });
+  });
+
+  app.get('/api/admin/users', authenticateToken, (req, res) => {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    const query = 'SELECT id, email FROM patients';
+    db.all(query, [], (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: 'Database error' });
+      }
+      // rows is an array of { id, email }
+      res.json(rows);
+    });
+  });
+
+  // Endpoint for patient to view their own responses
+app.get('/api/patient/my-responses', authenticateToken, (req, res) => {
+    // Typically we'd use req.user.id from the JWT. For demo, if your user object includes an id:
+    if (req.user.role !== 'patient') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+  
+    const patientId = req.user.id; // or a hardcoded value if your token doesn't store it
+    const query = 'SELECT * FROM responses WHERE patient_id = ?';
+    db.all(query, [patientId], (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: 'Database error' });
+      }
+      res.json(rows);
+    });
+  });
+
+  app.get('/api/admin/questions', authenticateToken, (req, res) => {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    const query = 'SELECT id, language, question_text, options, image_url FROM questions';
+    db.all(query, [], (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: 'Database error' });
+      }
+      res.json(rows);
+    });
+  });
+
+
+  app.delete('/api/admin/questions/:questionId', authenticateToken, (req, res) => {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    const { questionId } = req.params;
+    const query = 'DELETE FROM questions WHERE id = ?';
+    db.run(query, [questionId], function (err) {
+      if (err) {
+        return res.status(500).json({ error: 'Database error' });
+      }
+      if (this.changes === 0) {
+        return res.status(404).json({ error: 'Question not found' });
+      }
+      res.json({ success: true });
+    });
+  });
+  
+
+  app.get('/api/patient/response-status', authenticateToken, (req, res) => {
+    // Optionally, check if user is 'patient' or if admin can also fetch
+    // if (req.user.role !== 'patient') {
+    //   return res.status(403).json({ error: 'Forbidden' });
+    // }
+  
+    const { patientId } = req.query;
+    if (!patientId) {
+      return res.status(400).json({ error: 'Missing patientId' });
+    }
+  
+    // 1) Check if a response exists
+    const responseQuery = 'SELECT responses FROM responses WHERE patient_id = ?';
+    db.get(responseQuery, [patientId], (err, row) => {
+      if (err) {
+        return res.status(500).json({ error: 'Database error' });
+      }
+      const submitted = !!row;
+      let parsedResponses = {};
+      if (row) {
+        try {
+          parsedResponses = JSON.parse(row.responses);
+        } catch (err) {
+          // fallback if JSON parse fails
+        }
+      }
+  
+      // 2) Check if editing is allowed (from settings)
+      const settingsQuery = 'SELECT value FROM settings WHERE key = ?';
+      db.get(settingsQuery, ['allow_edit'], (err2, settingRow) => {
+        if (err2) {
+          return res.status(500).json({ error: 'Database error' });
+        }
+        const canEdit = settingRow ? settingRow.value === '1' : false;
+  
+        res.json({
+          submitted,
+          responses: parsedResponses,
+          canEdit
+        });
+      });
+    });
+  });
+  
+  
+  
+  
+  // For admin to delete a user:
+  app.delete('/api/admin/users/:patientId', authenticateToken, (req, res) => {
+    if (req.user.role !== 'admin')
+      return res.status(403).json({ error: 'Forbidden' });
+    const patientId = req.params.patientId;
+    const query = 'DELETE FROM patients WHERE id = ?';
+    db.run(query, [patientId], function (err) {
+      if (err) res.status(500).json({ error: 'Database error' });
+      else {
+        logAction('admin delete user', `Admin deleted user ${patientId}`);
+        res.json({ success: true });
+      }
+    });
+  });
+  
 
 // Start server
 app.listen(PORT, () => {

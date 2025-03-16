@@ -1,17 +1,21 @@
+// src/components/Layout.jsx
 import React, { useState } from 'react';
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
-  Box,
-  CssBaseline,
-  useMediaQuery
+    AppBar,
+    Toolbar,
+    Typography,
+    IconButton,
+    Drawer,
+    List,
+    ListItem,
+    ListItemText,
+    Box,
+    CssBaseline,
+    useMediaQuery,
+    Button,
+    Divider,
+    Stack,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useTheme } from '@mui/material/styles';
@@ -19,122 +23,139 @@ import { useTheme } from '@mui/material/styles';
 const drawerWidth = 240;
 
 function Layout() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [drawerOpen, setDrawerOpen] = useState(!isMobile);
-  const navigate = useNavigate();
-  const role = localStorage.getItem('role'); // 'admin' or 'patient'
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const [drawerOpen, setDrawerOpen] = useState(!isMobile);
+    const navigate = useNavigate();
+    const role = localStorage.getItem('role'); // 'admin' or 'patient'
 
-  const handleDrawerToggle = () => {
-    setDrawerOpen(!drawerOpen);
-  };
+    const handleDrawerToggle = () => {
+        setDrawerOpen(!drawerOpen);
+    };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    navigate('/');
-  };
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        navigate('/');
+    };
 
-  // Drawer content (links differ for admin vs. patient)
-  const drawerContent = (
-    <Box sx={{ width: drawerWidth, p: 2 }}>
-      <Typography variant="h5" gutterBottom>
-        Healer
-      </Typography>
-      {role === 'admin' ? (
-        <List>
-          <ListItem button component={Link} to="/admin">
-            <ListItemText primary="Admin Dashboard" />
-          </ListItem>
-          <ListItem button component={Link} to="/admin/toggle-edit">
-            <ListItemText primary="Toggle Edit" />
-          </ListItem>
-          <ListItem button component={Link} to="/admin/add-question">
-            <ListItemText primary="Add Question" />
-          </ListItem>
-          <ListItem button component={Link} to="/admin/logs">
-            <ListItemText primary="View Logs" />
-          </ListItem>
-        </List>
-      ) : (
-        <List>
-          <ListItem button component={Link} to="/patient">
-            <ListItemText primary="Patient MCQ" />
-          </ListItem>
-        </List>
-      )}
+    // A function to style active NavLink
+    const linkStyle = ({ isActive }) => ({
+        textDecoration: 'none',
+        color: isActive ? theme.palette.primary.main : '#333',
+        fontWeight: isActive ? 'bold' : 'normal',
+    });
 
-      <Box sx={{ mt: 2 }}>
-        <button onClick={handleLogout}>Logout</button>
-      </Box>
-    </Box>
-  );
+    const drawerContent = (
+        <Box sx={{ width: drawerWidth, p: 2 }}>
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold', color: theme.palette.primary.main }}>
+                Healer
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
 
-  return (
-    <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
+            {role === 'admin' ? (
+                <List>
+                    <ListItem>
+                        <NavLink to="/admin" style={linkStyle}>
+                            <ListItemText primary="Admin Dashboard" />
+                        </NavLink>
+                    </ListItem>
+                    <ListItem>
+                        <NavLink to="/admin/manage-questions" style={linkStyle}>
+                            <ListItemText primary="Manage Questions" />
+                        </NavLink>
+                    </ListItem>
+                    <ListItem>
+                        <NavLink to="/admin/toggle-edit" style={linkStyle}>
+                            <ListItemText primary="Toggle Edit" />
+                        </NavLink>
+                    </ListItem>
+                    <ListItem>
+                        <NavLink to="/admin/responses" style={linkStyle}>
+                            <ListItemText primary="View Responses" />
+                        </NavLink>
+                    </ListItem>
+                    <ListItem>
+                        <NavLink to="/admin/delete-users" style={linkStyle}>
+                            <ListItemText primary="Delete Users" />
+                        </NavLink>
+                    </ListItem>
+                    <ListItem>
+                        <NavLink to="/admin/logs" style={linkStyle}>
+                            <ListItemText primary="View Logs" />
+                        </NavLink>
+                    </ListItem>
+                </List>
+            ) : (
+                <List>
+                    <ListItem>
+                        <NavLink to="/patient" style={linkStyle}>
+                            <ListItemText primary="Patient MCQ" />
+                        </NavLink>
+                    </ListItem>
+                    <ListItem>
+                        <NavLink to="/patient/my-responses" style={linkStyle}>
+                            <ListItemText primary="View My Responses" />
+                        </NavLink>
+                    </ListItem>
+                </List>
+            )}
+            <Divider sx={{ my: 2 }} />
+            <Stack alignItems="center">
+                <Button variant="contained" color="secondary" onClick={handleLogout}>
+                    Logout
+                </Button>
+            </Stack>
+        </Box>
+    );
 
-      {/* AppBar with a higher zIndex than the drawer */}
-      <AppBar
-        position="fixed"
-        sx={{
-          zIndex: (theme) => theme.zIndex.drawer + 1, // Ensure it's above the drawer
-          bgcolor: 'primary.main', // Teal (from MUI theme or your custom theme)
-        }}
-      >
-        <Toolbar>
-          {/* Hamburger menu (only on mobile) */}
-          {isMobile && (
-            <IconButton
-              color="inherit"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{ mr: 2 }}
+    return (
+        <Box sx={{ display: 'flex' }}>
+            <CssBaseline />
+            <AppBar
+                position="fixed"
+                sx={{
+                    zIndex: (theme) => theme.zIndex.drawer + 1,
+                    bgcolor: theme.palette.primary.main,
+                }}
             >
-              <MenuIcon />
-            </IconButton>
-          )}
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            {role === 'admin' ? 'Admin Panel' : 'Patient Portal'}
-          </Typography>
-        </Toolbar>
-      </AppBar>
-
-      {/* Drawer: persistent on desktop, temporary on mobile */}
-      <Drawer
-        variant={isMobile ? 'temporary' : 'persistent'}
-        open={drawerOpen}
-        onClose={handleDrawerToggle}
-        sx={{
-          '& .MuiDrawer-paper': {
-            width: drawerWidth,
-            boxSizing: 'border-box',
-          },
-        }}
-      >
-        {drawerContent}
-      </Drawer>
-
-      {/* Main content: add top margin to avoid overlapping the AppBar */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: 3,
-          // Offset the AppBar height:
-          mt: '64px', // Typical MUI AppBar height on desktop
-          // Push content right if drawer is open (desktop)
-          ml: !isMobile && drawerOpen ? `${drawerWidth}px` : 0,
-          transition: 'margin 225ms cubic-bezier(0.4, 0, 0.2, 1)',
-        }}
-      >
-        {/* The <Toolbar /> component can also be used instead of mt if you prefer:
-            <Toolbar />
-         */}
-        <Outlet />
-      </Box>
-    </Box>
-  );
+                <Toolbar>
+                    {isMobile && (
+                        <IconButton color="inherit" edge="start" onClick={handleDrawerToggle} sx={{ mr: 2 }}>
+                            <MenuIcon />
+                        </IconButton>
+                    )}
+                    <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                        {role === 'admin' ? 'Admin Panel' : 'Patient Portal'}
+                    </Typography>
+                </Toolbar>
+            </AppBar>
+            <Drawer
+                variant={isMobile ? 'temporary' : 'persistent'}
+                open={drawerOpen}
+                onClose={handleDrawerToggle}
+                ModalProps={{ keepMounted: true }}
+                sx={{
+                    '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' },
+                }}
+            >
+                {drawerContent}
+            </Drawer>
+            <Box
+                component="main"
+                sx={{
+                    flexGrow: 1,
+                    p: 3,
+                    mt: 8,
+                    ml: !isMobile && drawerOpen ? `${drawerWidth}px` : 0,
+                    transition: 'margin 225ms cubic-bezier(0.4, 0, 0.2, 1)',
+                    bgcolor: 'background.default',
+                }}
+            >
+                <Outlet />
+            </Box>
+        </Box>
+    );
 }
 
 export default Layout;

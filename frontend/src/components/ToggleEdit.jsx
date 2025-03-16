@@ -1,48 +1,47 @@
 // src/components/ToggleEdit.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, Switch, FormControlLabel } from '@mui/material';
 
 function ToggleEdit() {
   const [allowEdit, setAllowEdit] = useState(true);
 
-  // Function to fetch current setting (if you have such an endpoint)
-  const fetchAllowEdit = async () => {
+  const fetchSetting = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5011/api/settings', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const res = await fetch('http://localhost:5011/api/settings', {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await response.json();
+      const data = await res.json();
       setAllowEdit(data.allow_edit === '1');
     } catch (error) {
-      console.error('Error fetching setting:', error);
+      console.error(error);
     }
   };
 
   useEffect(() => {
-    fetchAllowEdit();
+    fetchSetting();
   }, []);
 
   const handleToggle = async (event) => {
     const newValue = event.target.checked;
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5011/api/admin/toggle-edit', {
+      const res = await fetch('http://localhost:5011/api/admin/toggle-edit', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ allow_edit: newValue })
+        body: JSON.stringify({ allow_edit: newValue }),
       });
-      const data = await response.json();
+      const data = await res.json();
       if (data.success) {
         setAllowEdit(newValue);
       } else {
         alert('Failed to toggle edit setting');
       }
     } catch (error) {
-      console.error('Error toggling edit:', error);
+      console.error(error);
     }
   };
 
@@ -59,7 +58,7 @@ function ToggleEdit() {
             color="primary"
           />
         }
-        label="Allow Edit"
+        label={allowEdit ? 'Editing is enabled' : 'Editing is disabled'}
       />
     </Box>
   );
