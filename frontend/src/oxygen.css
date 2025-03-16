@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Oxygen:wght@300;400;700&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Oxygen', sans-serif;
+}
+
+/* Classes for different weights */
+.oxygen-light {
+  font-family: 'Oxygen', sans-serif;
+  font-weight: 300;
+}
+.oxygen-regular {
+  font-family: 'Oxygen', sans-serif;
+  font-weight: 400;
+}
+.oxygen-bold {
+  font-family: 'Oxygen', sans-serif;
+  font-weight: 700;
+}

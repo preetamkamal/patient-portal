@@ -1,6 +1,19 @@
 // src/components/PatientMCQ.jsx
 import React, { useEffect, useState } from 'react';
-import { Typography, Button, Radio, RadioGroup, FormControl, FormControlLabel, FormLabel, Box, Alert, Stack } from '@mui/material';
+import {
+  Typography,
+  Button,
+  Radio,
+  RadioGroup,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  Box,
+  Alert,
+  Stack,
+  Card,
+  CardContent
+} from '@mui/material';
 
 function PatientMCQ() {
   const [mcqs, setMcqs] = useState([]);
@@ -8,6 +21,7 @@ function PatientMCQ() {
   const [responses, setResponses] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [canEdit, setCanEdit] = useState(false);
+  const [scoreInfo, setScoreInfo] = useState(null);
 
   const patientId = localStorage.getItem('patientId');
 
@@ -38,7 +52,11 @@ function PatientMCQ() {
       const data = await res.json();
       if (data.submitted) {
         setSubmitted(true);
-        setResponses(data.responses);
+        // If scoring is used, the API might store answers in data.responses.answers
+        setResponses(data.responses.answers || data.responses);
+        if (data.responses.score !== undefined && data.responses.maxScore !== undefined) {
+          setScoreInfo({ score: data.responses.score, maxScore: data.responses.maxScore });
+        }
         setCanEdit(data.canEdit);
       }
     } catch (err) {
@@ -64,6 +82,9 @@ function PatientMCQ() {
       const data = await res.json();
       if (data.success) {
         setSubmitted(true);
+        if (data.score !== undefined && data.maxScore !== undefined) {
+          setScoreInfo({ score: data.score, maxScore: data.maxScore });
+        }
       } else {
         alert(data.error || 'Error submitting responses');
       }
@@ -81,8 +102,8 @@ function PatientMCQ() {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
-      <Typography variant="h4" mb={2}>
+    <Box className="oxygen-regular" sx={{ p: 2 }}>
+      <Typography variant="h4" mb={2} className="oxygen-bold">
         MCQ Questionnaire
       </Typography>
       <Stack direction="row" spacing={1} mb={2}>
@@ -93,9 +114,15 @@ function PatientMCQ() {
           Hindi
         </Button>
       </Stack>
+
       {submitted ? (
         <Alert severity="success" sx={{ mb: 2 }}>
-          Response already submitted.
+          Response submitted.
+          {scoreInfo && (
+            <Typography variant="subtitle1" sx={{ mt: 1 }}>
+              Your score: {scoreInfo.score} / {scoreInfo.maxScore}
+            </Typography>
+          )}
           {canEdit && (
             <Button onClick={handleEdit} variant="outlined" size="small" sx={{ ml: 2 }}>
               Edit Response
@@ -103,30 +130,46 @@ function PatientMCQ() {
           )}
         </Alert>
       ) : (
-        mcqs.map((q) => (
-          <Box key={q.id} sx={{ mb: 3 }}>
-            <FormControl component="fieldset" fullWidth>
-              <FormLabel component="legend">{q.question_text}</FormLabel>
-              {q.image_url && (
-                <Box sx={{ mt: 1 }}>
-                  <img
-                    src={`http://localhost:5011${q.image_url}`}
-                    alt="Question"
-                    style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain' }}
-                  />
-                </Box>
-              )}
-              <RadioGroup value={responses[q.id] || ''} onChange={(e) => handleOptionChange(q.id, e.target.value)}>
-                {q.options.map((opt, idx) => (
-                  <FormControlLabel key={idx} value={opt} control={<Radio />} label={opt} />
-                ))}
-              </RadioGroup>
-            </FormControl>
-          </Box>
-        ))
+        <Stack spacing={2}>
+          {mcqs.map((q) => (
+            <Card key={q.id} variant="outlined">
+              <CardContent>
+                <FormControl component="fieldset" fullWidth>
+                  <FormLabel component="legend" className="oxygen-bold">
+                    {q.question_text}
+                  </FormLabel>
+                  {q.image_url && (
+                    <Box sx={{ mt: 1 }}>
+                      <img
+                        src={`http://localhost:5011${q.image_url}`}
+                        alt="Question"
+                        style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain', marginTop: '8px' }}
+                      />
+                    </Box>
+                  )}
+                  <RadioGroup
+                    value={responses[q.id] || ''}
+                    onChange={(e) => handleOptionChange(q.id, e.target.value)}
+                  >
+                    {q.options.map((opt, idx) => (
+                      <FormControlLabel
+                        key={idx}
+                        value={opt.text}
+                        control={<Radio />}
+                        label={opt.text}
+                        className="oxygen-light"
+                      />
+                    ))}
+                  </RadioGroup>
+                </FormControl>
+              </CardContent>
+            </Card>
+          ))}
+        </Stack>
       )}
+
       {!submitted && (
-        <Button variant="contained" color="primary" onClick={handleSubmit}>
+        <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 2 }}>
           Submit Responses
         </Button>
       )}

@@ -1,7 +1,22 @@
 // src/components/Layout.jsx
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemText, Box, CssBaseline, useMediaQuery, Button, Divider, Stack } from '@mui/material';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  Box,
+  CssBaseline,
+  useMediaQuery,
+  Button,
+  Divider,
+  Stack
+} from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useTheme } from '@mui/material/styles';
 
@@ -25,22 +40,30 @@ function Layout() {
     navigate('/');
   };
 
+  // Add background color and bold text if active
   const linkStyle = ({ isActive }) => ({
     textDecoration: 'none',
+    padding: '8px',
+    borderRadius: '4px',
     color: isActive ? theme.palette.primary.main : '#333',
     fontWeight: isActive ? 'bold' : 'normal',
+    backgroundColor: isActive ? 'rgba(0,0,0,0.1)' : 'transparent',
   });
 
   const drawerContent = (
     <Box sx={{ width: drawerWidth, p: 2 }}>
-      <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold', color: theme.palette.primary.main }}>
+      <Typography
+        variant="h5"
+        sx={{ mb: 2, fontWeight: 'bold', color: theme.palette.primary.main }}
+        className="oxygen-bold"
+      >
         Healer
       </Typography>
       <Divider sx={{ mb: 2 }} />
       {role === 'admin' ? (
         <List>
           <ListItem>
-            <NavLink to="/admin" style={linkStyle}>
+            <NavLink to="/admin" style={linkStyle} end>
               <ListItemText primary="Admin Dashboard" />
             </NavLink>
           </ListItem>
@@ -78,7 +101,7 @@ function Layout() {
       ) : (
         <List>
           <ListItem>
-            <NavLink to="/patient" style={linkStyle}>
+            <NavLink to="/patient" style={linkStyle} end>
               <ListItemText primary="Patient MCQ" />
             </NavLink>
           </ListItem>
@@ -99,12 +122,12 @@ function Layout() {
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box className="oxygen-regular" sx={{ display: 'flex' }}>
       <CssBaseline />
       <AppBar
         position="fixed"
         sx={{
-          zIndex: theme => theme.zIndex.drawer + 1,
+          zIndex: (theme) => theme.zIndex.drawer + 1,
           bgcolor: theme.palette.primary.main,
         }}
       >
@@ -114,7 +137,7 @@ function Layout() {
               <MenuIcon />
             </IconButton>
           )}
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" sx={{ flexGrow: 1 }} className="oxygen-bold">
             {role === 'admin' ? 'Admin Panel' : 'Patient Portal'}
           </Typography>
         </Toolbar>
