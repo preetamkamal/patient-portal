@@ -236,7 +236,7 @@ function Layout() {
       {role === 'admin' ? (
         <List>
           <ListItem>
-            <NavLink to="/admin" style={linkStyle}>
+            <NavLink to="/admin" style={linkStyle} end>
               <ListItemText primary="Admin Dashboard" />
             </NavLink>
           </ListItem>
@@ -274,7 +274,7 @@ function Layout() {
       ) : (
         <List>
           <ListItem>
-            <NavLink to="/patient" style={linkStyle}>
+            <NavLink to="/patient" style={linkStyle} end>
               <ListItemText primary="Patient MCQ" />
             </NavLink>
           </ListItem>
