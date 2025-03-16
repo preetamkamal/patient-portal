@@ -57,7 +57,7 @@ function Layout() {
         sx={{ mb: 2, fontWeight: 'bold', color: theme.palette.primary.main }}
         className="oxygen-bold"
       >
-        Healer
+        MMSE
       </Typography>
       <Divider sx={{ mb: 2 }} />
       {role === 'admin' ? (

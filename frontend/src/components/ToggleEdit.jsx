@@ -4,11 +4,11 @@ import { Box, Typography, Switch, FormControlLabel } from '@mui/material';
 
 function ToggleEdit() {
   const [allowEdit, setAllowEdit] = useState(true);
-
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const fetchSetting = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5011/api/settings', {
+      const res = await fetch(`${baseUrl}/api/settings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -26,7 +26,7 @@ function ToggleEdit() {
     const newValue = event.target.checked;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5011/api/admin/toggle-edit', {
+      const res = await fetch(`${baseUrl}/api/admin/toggle-edit`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

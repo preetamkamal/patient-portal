@@ -15,12 +15,12 @@ import {
 function DeleteUsers() {
   const [users, setUsers] = useState([]);
   const [alertMsg, setAlertMsg] = useState('');
-
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   // Fetch all users (patients)
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5011/api/admin/users', {
+      const res = await fetch(`${baseUrl}/api/admin/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -38,7 +38,7 @@ function DeleteUsers() {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5011/api/admin/users/${userId}`, {
+      const res = await fetch(`${baseUrl}/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

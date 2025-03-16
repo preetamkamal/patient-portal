@@ -4,12 +4,12 @@ import { Box, Typography, List, ListItem, ListItemText } from '@mui/material';
 
 function Logs() {
   const [logs, setLogs] = useState([]);
-
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   useEffect(() => {
     const fetchLogs = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5011/api/admin/logs', {
+        const res = await fetch(`${baseUrl}/api/admin/logs`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();

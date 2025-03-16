@@ -24,6 +24,7 @@ function PatientMCQ() {
   const [scoreInfo, setScoreInfo] = useState(null);
 
   const patientId = localStorage.getItem('patientId');
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     fetchMCQs(language);
@@ -33,7 +34,7 @@ function PatientMCQ() {
   const fetchMCQs = async (lang) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5011/api/mcqs?lang=${lang}`, {
+      const res = await fetch(`${baseUrl}/api/mcqs?lang=${lang}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -46,7 +47,7 @@ function PatientMCQ() {
   const checkSubmissionStatus = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5011/api/patient/response-status?patientId=${patientId}`, {
+      const res = await fetch(`${baseUrl}/api/patient/response-status?patientId=${patientId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -71,7 +72,7 @@ function PatientMCQ() {
   const handleSubmit = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5011/api/mcqs/submit`, {
+      const res = await fetch(`${baseUrl}/api/mcqs/submit`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -141,7 +142,7 @@ function PatientMCQ() {
                   {q.image_url && (
                     <Box sx={{ mt: 1 }}>
                       <img
-                        src={`http://localhost:5011${q.image_url}`}
+                        src={`${baseUrl}${q.image_url}`}
                         alt="Question"
                         style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain', marginTop: '8px' }}
                       />

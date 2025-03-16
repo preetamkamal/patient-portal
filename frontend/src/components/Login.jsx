@@ -7,13 +7,14 @@ function Login() {
   const [role, setRole] = useState('patient');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     const endpoint = role === 'admin' ? '/api/admin/login' : '/api/patient/login';
     try {
-      const response = await fetch(`http://localhost:5011${endpoint}`, {
+      const response = await fetch(`${baseUrl}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -51,7 +52,7 @@ function Login() {
       <Card sx={{ width: { xs: '100%', sm: 400 }, p: 2 }}>
         <CardContent>
           <Typography variant="h4" textAlign="center" gutterBottom>
-            Healer Login
+          The Mental State Examination Login
           </Typography>
           <Box component="form" onSubmit={handleLogin} noValidate>
             <FormControl fullWidth sx={{ mb: 2 }}>

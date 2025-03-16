@@ -24,7 +24,7 @@ function AdminResponses() {
   const [editingResponse, setEditingResponse] = useState({});
   const [openDialog, setOpenDialog] = useState(false);
   const [alertMsg, setAlertMsg] = useState('');
-
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   useEffect(() => {
     fetchResponses();
   }, []);
@@ -32,7 +32,7 @@ function AdminResponses() {
   const fetchResponses = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5011/api/admin/responses', {
+      const res = await fetch(`${baseUrl}/api/admin/responses`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -64,7 +64,7 @@ function AdminResponses() {
     if (!window.confirm('Are you sure you want to delete this response?')) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5011/api/admin/responses/${patientId}`, {
+      const res = await fetch(`${baseUrl}/api/admin/responses/${patientId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -89,7 +89,7 @@ function AdminResponses() {
   const handleAdminUpdate = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5011/api/admin/responses/${selectedPatientId}`, {
+      const res = await fetch(`${baseUrl}/api/admin/responses/${selectedPatientId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
