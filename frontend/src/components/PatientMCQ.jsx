@@ -1,17 +1,6 @@
 // src/components/PatientMCQ.jsx
 import React, { useEffect, useState } from 'react';
-import {
-  Typography,
-  Button,
-  Radio,
-  RadioGroup,
-  FormControl,
-  FormControlLabel,
-  FormLabel,
-  Box,
-  Alert,
-  Stack,
-} from '@mui/material';
+import { Typography, Button, Radio, RadioGroup, FormControl, FormControlLabel, FormLabel, Box, Alert, Stack } from '@mui/material';
 
 function PatientMCQ() {
   const [mcqs, setMcqs] = useState([]);
@@ -20,8 +9,7 @@ function PatientMCQ() {
   const [submitted, setSubmitted] = useState(false);
   const [canEdit, setCanEdit] = useState(false);
 
-  // For demo, hardcoded patientId; replace with proper user info.
-  const patientId = 1;
+  const patientId = localStorage.getItem('patientId');
 
   useEffect(() => {
     fetchMCQs(language);
@@ -41,7 +29,6 @@ function PatientMCQ() {
     }
   };
 
-  // Check if a response exists for this patient
   const checkSubmissionStatus = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -70,9 +57,9 @@ function PatientMCQ() {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ patientId, responses }),
+        body: JSON.stringify({ patientId, responses })
       });
       const data = await res.json();
       if (data.success) {
@@ -85,10 +72,6 @@ function PatientMCQ() {
     }
   };
 
-  useEffect(() => {
-    console.log(mcqs)
-  });
-
   const handleEdit = () => {
     if (!canEdit) {
       alert('Editing is disabled by admin.');
@@ -97,29 +80,19 @@ function PatientMCQ() {
     setSubmitted(false);
   };
 
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5011';
-
-
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h4" mb={2}>
         MCQ Questionnaire
       </Typography>
       <Stack direction="row" spacing={1} mb={2}>
-        <Button
-          variant={language === 'en' ? 'contained' : 'outlined'}
-          onClick={() => setLanguage('en')}
-        >
+        <Button variant={language === 'en' ? 'contained' : 'outlined'} onClick={() => setLanguage('en')}>
           English
         </Button>
-        <Button
-          variant={language === 'hi' ? 'contained' : 'outlined'}
-          onClick={() => setLanguage('hi')}
-        >
+        <Button variant={language === 'hi' ? 'contained' : 'outlined'} onClick={() => setLanguage('hi')}>
           Hindi
         </Button>
       </Stack>
-
       {submitted ? (
         <Alert severity="success" sx={{ mb: 2 }}>
           Response already submitted.
@@ -133,24 +106,17 @@ function PatientMCQ() {
         mcqs.map((q) => (
           <Box key={q.id} sx={{ mb: 3 }}>
             <FormControl component="fieldset" fullWidth>
-              <FormLabel component="legend">{q.question}</FormLabel>
+              <FormLabel component="legend">{q.question_text}</FormLabel>
               {q.image_url && (
                 <Box sx={{ mt: 1 }}>
                   <img
-                  style={{
-                    maxWidth: '100%',
-                    maxHeight: '300px', // or any max height you prefer
-                    objectFit: 'contain',
-                    display: 'block',
-                    marginTop: '8px',
-                  }}
-                  src={`${baseUrl}${q.image_url}`}  alt="Question" />
+                    src={`http://localhost:5011${q.image_url}`}
+                    alt="Question"
+                    style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain' }}
+                  />
                 </Box>
               )}
-              <RadioGroup
-                value={responses[q.id] || ''}
-                onChange={(e) => handleOptionChange(q.id, e.target.value)}
-              >
+              <RadioGroup value={responses[q.id] || ''} onChange={(e) => handleOptionChange(q.id, e.target.value)}>
                 {q.options.map((opt, idx) => (
                   <FormControlLabel key={idx} value={opt} control={<Radio />} label={opt} />
                 ))}
@@ -159,7 +125,6 @@ function PatientMCQ() {
           </Box>
         ))
       )}
-
       {!submitted && (
         <Button variant="contained" color="primary" onClick={handleSubmit}>
           Submit Responses

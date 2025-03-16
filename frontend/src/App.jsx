@@ -18,7 +18,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/" element={<Layout />}>
-        {/* Admin routes */}
+        {/* Admin Routes */}
         <Route path="admin" element={<AdminDashboard />} />
         <Route path="admin/manage-questions" element={<ManageQuestions />} />
         <Route path="admin/toggle-edit" element={<ToggleEdit />} />
@@ -26,10 +26,9 @@ function App() {
         <Route path="admin/delete-users" element={<DeleteUsers />} />
         <Route path="admin/logs" element={<Logs />} />
         <Route path="admin/add-question" element={<AddQuestion />} />
-        {/* Patient route */}
+        {/* Patient Routes */}
         <Route path="patient" element={<PatientMCQ />} />
         <Route path="patient/my-responses" element={<PatientViewResponses />} />
-
       </Route>
     </Routes>
   );

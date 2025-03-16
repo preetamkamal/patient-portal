@@ -1,18 +1,7 @@
 // src/components/Login.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  TextField,
-  Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem
-} from '@mui/material';
+import { Box, Card, CardContent, Typography, TextField, Button, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 
 function Login() {
   const [role, setRole] = useState('patient');
@@ -33,7 +22,12 @@ function Login() {
       if (data.success) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('role', role);
-        navigate(role === 'admin' ? '/admin' : '/patient');
+        if (role === 'patient') {
+          localStorage.setItem('patientId', data.patient.id);
+          navigate('/patient');
+        } else {
+          navigate('/admin');
+        }
       } else {
         alert(data.message || 'Login failed');
       }

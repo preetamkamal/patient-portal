@@ -27,7 +27,6 @@ function PatientViewResponses() {
     }
   };
 
-  // Convert stored JSON string to something readable
   const formatResponse = (respString) => {
     try {
       const obj = JSON.parse(respString);
