@@ -65,12 +65,12 @@ function Login() {
       >
         <Card sx={{ width: { xs: '100%', sm: 400 }, p: 2 }}>
           <CardContent>
-          <Typography variant="h4" textAlign="center" gutterBottom>
-          MSE
+          <Typography variant="h5" textAlign="center" gutterBottom>
+          Cognitive Function Test
            </Typography>
-           <Typography variant="h6" textAlign="center" gutterBottom>
-           Mental State Examination
-           </Typography>
+           {/* <Typography variant="h6" textAlign="center" gutterBottom>
+           Cognitive Function Test
+           </Typography> */}
            <br/>
             <Box component="form" onSubmit={handleLogin} noValidate>
               <FormControl fullWidth sx={{ mb: 2 }}>

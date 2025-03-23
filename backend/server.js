@@ -102,6 +102,81 @@ app.post('/api/patient/login', (req, res) => {
   });
 });
 
+app.post('/api/patient/login', (req, res) => {
+  const { email, password } = req.body;
+  const query = 'SELECT * FROM patients WHERE email = ? AND password = ?';
+  db.get(query, [email, password], (err, row) => {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    if (row) {
+      const token = jwt.sign({ id: row.id, email: row.email, role: 'patient' }, JWT_SECRET, { expiresIn: '1h' });
+      res.json({ 
+        success: true, 
+        patient: {
+          id: row.id,
+          email: row.email,
+          name: row.name,
+          dob: row.dob,
+          doctorAssigned: row.doctor_assigned,
+          healthWorker: row.health_worker,
+          healthWorkerType: row.health_worker_type
+        }, 
+        token 
+      });
+      logAction('patient login', `Patient ${row.email} logged in`);
+    } else {
+      res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+  });
+});
+
+app.get('/api/patient/profile', authenticateToken, (req, res) => {
+  if (req.user.role !== 'patient') return res.status(403).json({ error: 'Forbidden' });
+  
+  const patientId = req.user.id;
+  const query = 'SELECT id, email, name, dob, doctor_assigned, health_worker, health_worker_type FROM patients WHERE id = ?';
+  
+  db.get(query, [patientId], (err, row) => {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    if (!row) return res.status(404).json({ error: 'Patient not found' });
+    
+    res.json({ 
+      success: true, 
+      profile: row 
+    });
+  });
+});
+
+// Update patient profile information
+app.post('/api/patient/profile', authenticateToken, (req, res) => {
+  if (req.user.role !== 'patient') return res.status(403).json({ error: 'Forbidden' });
+  
+  const patientId = req.user.id;
+  const { name, dob, doctorAssigned, healthWorker, healthWorkerType } = req.body;
+  
+  const query = `UPDATE patients SET 
+    name = ?, 
+    dob = ?, 
+    doctor_assigned = ?, 
+    health_worker = ?, 
+    health_worker_type = ? 
+    WHERE id = ?`;
+  
+  db.run(query, [name, dob, doctorAssigned, healthWorker, healthWorkerType, patientId], function(err) {
+    if (err) return res.status(500).json({ error: 'Database error: ' + err.message });
+    
+    if (this.changes === 0) {
+      return res.status(404).json({ error: 'Patient not found or no changes made' });
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Profile updated successfully' 
+    });
+    
+    logAction('patient profile update', `Patient ${patientId} updated their profile`);
+  });
+});
+
 // ------------------------------
 // ADMIN ENDPOINTS
 // ------------------------------
@@ -193,10 +268,25 @@ app.delete('/api/admin/questions/:questionId', authenticateToken, (req, res) => 
   });
 });
 
+app.get('/api/settings', (req, res) => {
+  const query = 'SELECT value FROM settings WHERE key = ?';
+  db.get(query, ['allow_edit'], (err, row) => {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    res.json({ allow_edit: row ? row.value : '1' });
+  });
+});
+
 // GET /api/admin/responses – returns all responses.
 app.get('/api/admin/responses', authenticateToken, (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
-  const query = 'SELECT * FROM responses';
+  
+  const query = `
+    SELECT r.*, p.name, p.email, p.dob, p.doctor_assigned, p.health_worker, p.health_worker_type
+    FROM responses r
+    LEFT JOIN patients p ON r.patient_id = p.id
+    ORDER BY r.id DESC
+  `;
+  
   db.all(query, [], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Database error' });
     res.json(rows);
@@ -370,48 +460,89 @@ app.put('/api/mcqs/update', authenticateToken, (req, res) => {
 
 // POST /api/mcqs/submit – patient submits responses.
 // This version allows multiple test submissions without deleting previous ones.
+// app.post('/api/mcqs/submit', authenticateToken, (req, res) => {
+//     if (req.user.role !== 'patient') return res.status(403).json({ error: 'Forbidden' });
+//     const patientId = req.user.id; // from JWT
+//     const { responses } = req.body; // responses: { questionId: selectedOptionText, ... }
+    
+//     const questionIds = Object.keys(responses);
+//     let totalScore = 0;
+//     let totalMaxScore = 0;
+//     let processed = 0;
+    
+//     questionIds.forEach((qid) => {
+//       const query = 'SELECT options FROM questions WHERE id = ?';
+//       db.get(query, [qid], (err, qRow) => {
+//         processed++;
+//         if (!err && qRow) {
+//           try {
+//             const options = JSON.parse(qRow.options); // array of {text, score}
+//             // Find the option that matches the response value
+//             const selected = options.find(opt => opt.text === responses[qid]);
+//             // Maximum possible score for this question is the maximum among options.
+//             const questionMax = Math.max(...options.map(opt => opt.score));
+//             totalMaxScore += questionMax;
+//             if (selected) totalScore += selected.score;
+//           } catch (e) {
+//             console.error(e);
+//           }
+//         }
+//         if (processed === questionIds.length) {
+//           const result = {
+//             answers: responses,
+//             score: totalScore,
+//             maxScore: totalMaxScore
+//           };
+//           const insertQuery = 'INSERT INTO responses (patient_id, responses) VALUES (?, ?)';
+//           db.run(insertQuery, [patientId, JSON.stringify(result)], function(err) {
+//             if (err) return res.status(500).json({ error: 'Database error' });
+//             res.json({ success: true, responseId: this.lastID, score: totalScore, maxScore: totalMaxScore });
+//           });
+//         }
+//       });
+//     });
+//   });
 app.post('/api/mcqs/submit', authenticateToken, (req, res) => {
-    if (req.user.role !== 'patient') return res.status(403).json({ error: 'Forbidden' });
-    const patientId = req.user.id; // from JWT
-    const { responses } = req.body; // responses: { questionId: selectedOptionText, ... }
-    
-    const questionIds = Object.keys(responses);
-    let totalScore = 0;
-    let totalMaxScore = 0;
-    let processed = 0;
-    
-    questionIds.forEach((qid) => {
-      const query = 'SELECT options FROM questions WHERE id = ?';
-      db.get(query, [qid], (err, qRow) => {
-        processed++;
-        if (!err && qRow) {
-          try {
-            const options = JSON.parse(qRow.options); // array of {text, score}
-            // Find the option that matches the response value
-            const selected = options.find(opt => opt.text === responses[qid]);
-            // Maximum possible score for this question is the maximum among options.
-            const questionMax = Math.max(...options.map(opt => opt.score));
-            totalMaxScore += questionMax;
-            if (selected) totalScore += selected.score;
-          } catch (e) {
-            console.error(e);
-          }
+  if (req.user.role !== 'patient') return res.status(403).json({ error: 'Forbidden' });
+  const patientId = req.user.id; // from JWT
+  const { responses, patientInfo } = req.body; // Get both responses and patient info
+  
+  const questionIds = Object.keys(responses);
+  let totalScore = 0;
+  let totalMaxScore = 0;
+  let processed = 0;
+  
+  questionIds.forEach((qid) => {
+    const query = 'SELECT options FROM questions WHERE id = ?';
+    db.get(query, [qid], (err, qRow) => {
+      processed++;
+      if (!err && qRow) {
+        try {
+          const options = JSON.parse(qRow.options);
+          const selected = options.find(opt => opt.text === responses[qid]);
+          const questionMax = Math.max(...options.map(opt => opt.score));
+          totalMaxScore += questionMax;
+          if (selected) totalScore += selected.score;
+        } catch (e) {
+          console.error(e);
         }
-        if (processed === questionIds.length) {
-          const result = {
-            answers: responses,
-            score: totalScore,
-            maxScore: totalMaxScore
-          };
-          const insertQuery = 'INSERT INTO responses (patient_id, responses) VALUES (?, ?)';
-          db.run(insertQuery, [patientId, JSON.stringify(result)], function(err) {
-            if (err) return res.status(500).json({ error: 'Database error' });
-            res.json({ success: true, responseId: this.lastID, score: totalScore, maxScore: totalMaxScore });
-          });
-        }
-      });
+      }
+      if (processed === questionIds.length) {
+        const result = {
+          answers: responses,
+          score: totalScore,
+          maxScore: totalMaxScore,
+          patientInfo: patientInfo // Store the patient info along with responses
+        };
+        const insertQuery = 'INSERT INTO responses (patient_id, responses) VALUES (?, ?)';
+        db.run(insertQuery, [patientId, JSON.stringify(result)], function(err) {
+          if (err) return res.status(500).json({ error: 'Database error' });
+          res.json({ success: true, responseId: this.lastID, score: totalScore, maxScore: totalMaxScore });
+        });
+      }
     });
   });
+});
   
 
 //   app.get('*', (req, res) => {

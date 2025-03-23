@@ -23,9 +23,14 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                 password TEXT
             )`);
             db.run(`CREATE TABLE IF NOT EXISTS patients (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                email TEXT UNIQUE,
-                password TEXT
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              email TEXT UNIQUE,
+              password TEXT,
+              name TEXT,
+              dob TEXT,
+              doctor_assigned TEXT,
+              health_worker TEXT,
+              health_worker_type TEXT
             )`);
             db.run(`CREATE TABLE IF NOT EXISTS responses (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,7 +68,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
             // Insert default patient accounts
             const insertPatient = 'INSERT OR IGNORE INTO patients (email, password) VALUES (?,?)';
             for (let i = 1; i <= 5; i++) {
-                db.run(insertPatient, [`patient${i}@example.com`, `pass${i}`]);
+                db.run(insertPatient, [`cho${i}@example.com`, `pass${i}`]);
             }
 
             // Check if questions table already has data
