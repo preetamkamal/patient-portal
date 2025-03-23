@@ -10,7 +10,6 @@ A web-based application for administering, managing, and analyzing mental state 
 - Project Structure
 - Usage
 - Deployment
-- Screenshots
 - License
 
 ## ✨ Features
@@ -18,18 +17,20 @@ A web-based application for administering, managing, and analyzing mental state 
 ### Patient Features
 - Multi-language support (English/Hindi) for questionnaires
 - MCQ-based mental state examination
-- View and track previous test responses 
-- Score calculation based on responses
+- Patient information collection (name, DOB, doctor assigned, health worker)
+- View and track previous test responses and scores
+- Export test results to Excel with comprehensive information
+- Auto-fill capability for repeat tests
 - Option to retake tests
 
 ### Admin Features
 - Comprehensive dashboard for patient management
 - Add new patients with credentials
-- View all patient responses and scores
-- Add, modify, and delete questions
-- Upload images for visual questions
-- Toggle patient's ability to edit responses
-- System logs for auditing
+- Search patients by name or email
+- View detailed patient responses with collapsible sections
+- Add, modify, and delete questions with scoring options
+- Upload images for visual assessment questions
+- System logs for auditing admin actions
 - Delete users and responses
 
 ## 🛠 Tech Stack
@@ -39,6 +40,8 @@ A web-based application for administering, managing, and analyzing mental state 
 - Material UI 6
 - React Router 7
 - Vite 6 (build tool)
+- Day.js (date handling)
+- XLSX (Excel export)
 
 ### Backend
 - Node.js
@@ -59,7 +62,7 @@ A web-based application for administering, managing, and analyzing mental state 
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/your-username/patient-portal.git
+git clone https://github.com/preetamkamal/patient-portal.git
 cd patient-portal
 ```
 
@@ -77,13 +80,13 @@ npm install
 
 4. **Configure environment variables**
 
-Create `.env` files in both frontend and backend folders:
+Create .env files in both frontend and backend folders:
 
 Backend (./backend/.env):
 ```
 PORT=5011
-JWT_SECRET=FmnH92QPWbMh6JKWEzphZW2NPLBgpnNiWfPcvg3PwFVmeH47g3F3mdDvi0WU
-NODE_ENV=production
+JWT_SECRET=your_secure_jwt_secret_key
+NODE_ENV=development
 ```
 
 Frontend (./frontend/.env):
@@ -91,9 +94,9 @@ Frontend (./frontend/.env):
 VITE_API_BASE_URL=http://localhost:5011
 ```
 
-Frontend Production (After hosting backend make a .env.production file and update the url):
+Frontend Production (After hosting backend):
 ```
-VITE_API_BASE_URL=https://your-backend.onrender.com/ 
+VITE_API_BASE_URL=https://your-backend.onrender.com
 ```
 
 5. **Run the application**
@@ -115,7 +118,7 @@ npm run dev
 ```
 patient-portal/
 ├── backend/
-│   ├── db.js                # Database configuration
+│   ├── db.js                # Database configuration and initial setup
 │   ├── server.js            # Express server and API endpoints
 │   ├── uploads/             # Uploaded images for questions
 │   └── db.sqlite            # SQLite database file
@@ -124,7 +127,12 @@ patient-portal/
     ├── public/              # Static assets
     ├── src/
     │   ├── components/      # React components
-    │   ├── App.jsx          # Main app component
+    │   │   ├── AdminDashboard.jsx    # Admin main page
+    │   │   ├── PatientMCQ.jsx        # Patient questionnaire
+    │   │   ├── PatientInfoForm.jsx   # Patient information form
+    │   │   ├── AdminResponses.jsx    # View patient responses
+    │   │   └── ...                   # Other component files
+    │   ├── App.jsx          # Main app component with routes
     │   ├── main.jsx         # Entry point
     │   └── theme.js         # Material UI theme customization
     ├── index.html           # HTML template
@@ -140,186 +148,51 @@ patient-portal/
 - Email: admin2@example.com / Password: admin123
 
 **Patient Users:**
-- Email: patient1@example.com / Password: pass1
-- Email: patient2@example.com / Password: pass2
+- Email: cho1@example.com / Password: pass1
+- Email: cho2@example.com / Password: pass2
 - (and so on for patients 3-5)
 
 ### Workflow
 
 1. **Login**: Access the application using the provided credentials
+
 2. **Patient Flow**: 
-   - Complete MCQ questionnaire in preferred language
-   - View historical responses and scores
+   - Complete patient information form with name, DOB, doctor assigned, and health worker details
+   - Choose language (English/Hindi)
+   - Complete MCQ questionnaire
+   - View score and download results in Excel format
+   - View historical responses
+   - Take new tests with auto-filled information
+
 3. **Admin Flow**:
    - Manage patients (add/delete)
-   - Manage questions (add/delete)
-   - View patient responses
-   - Configure system settings
+   - Manage questions (add/edit/delete)
+   - View and search patient responses
+   - Export individual patient results to Excel
+   - View system logs
 
 ## 📦 Deployment
 
-### Deploying the Node Backend using [Render.com](Render.com)
+### Deploying the Node Backend using [Render.com](https://render.com)
 
-1. Sign up for a [Render.com](Render.com) account
-2. Create a new Web Service on [Render.com](Render.com).
+1. Sign up for a [Render.com](https://render.com) account
+2. Create a new Web Service on Render.com
 3. Link to your GitHub repository
-4. Specify the build command (`npm install`) and start command (`npm start` or `node server.js`).
-5. Add environment variables (e.g. `JWT_SECRET`, `PORT=5011`).
-7. Deploy. Render gives you a free domain like [your-backend.onrender.com](https://your-backend.onrender.com).
+4. Specify the build command (`npm install`) and start command (`npm start` or `node server.js`)
+5. Add environment variables (e.g. `JWT_SECRET`, `PORT=5011`)
+6. Deploy. Render gives you a free domain like [your-backend.onrender.com](https://your-backend.onrender.com)
 
-### Deploying the Node Backend using Digital Ocean
-## Deploying to DigitalOcean
+### Deploying the React Frontend using Vercel
 
-Follow these steps to deploy your backend to a DigitalOcean Droplet.
-
-### 1. Create a DigitalOcean Droplet
-
-1. Log in to your [DigitalOcean Dashboard](https://cloud.digitalocean.com/).
-2. Click **"Create Droplet"**.
-3. Select an image (Ubuntu 20.04/22.04 LTS recommended).
-4. Choose a plan (the basic plan is typically sufficient for small apps).
-5. Add your SSH keys (recommended) or set a password.
-6. Choose a datacenter region.
-7. Name your droplet and click **"Create Droplet"**.
-
-### 2. Connect via SSH
-
-Once your droplet is ready, note its public IP address and connect using SSH:
-
-```bash
-ssh root@your_droplet_ip
-```
-
-Replace `your_droplet_ip` with your droplet’s IP address.
-
-### 3. Install Dependencies on the Droplet
-
-Install Node.js and Git:
-
-```bash
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-sudo apt-get install -y nodejs git
-```
-
-*(Replace `16.x` with your desired version if needed.)*
-
-### 4. Clone Your Repository
-
-Clone your project repository (backend):
-
-```bash
-git clone https://github.com/yourusername/your-backend-repo.git
-cd your-backend-repo
-```
-
-### 5. Configure Environment Variables
-
-Create a `.env` file in your backend folder:
-
-```bash
-nano .env
-```
-
-Add your environment variables:
-
-```env
-PORT=5011
-JWT_SECRET=your_secret_key
-```
-
-Save (Ctrl+O) and exit (Ctrl+X).
-
-### 6. Launch the Backend
-
-Install backend dependencies:
-
-```bash
-npm install
-```
-
-Test your app:
-
-```bash
-node server.js
-```
-
-You should see:
-```
-Connected to SQLite database
-Server is running on port 5011
-```
-
-**Optional: Run in Background with PM2**
-
-1. Install PM2 globally:
-
-   ```bash
-   sudo npm install -g pm2
-   ```
-2. Start your app:
-
-   ```bash
-   pm2 start server.js --name "patient-portal-backend"
-   ```
-3. Configure PM2 to restart on reboot:
-
-   ```bash
-   pm2 startup
-   pm2 save
-   ```
-
-### 7. (Optional) Configure Nginx as a Reverse Proxy
-
-If you want to serve your backend on port 80:
-
-1. Install Nginx:
-
-   ```bash
-   sudo apt update
-   sudo apt install nginx
-   ```
-2. Create a new Nginx configuration:
-
-   ```bash
-   sudo nano /etc/nginx/sites-available/patient-portal-backend
-   ```
-
-3. Paste the following (replace with your droplet IP if you don’t have a domain):
-
-   ```nginx
-   server {
-       listen 80;
-       server_name your_droplet_ip;
-
-       location / {
-           proxy_pass http://localhost:5011;
-           proxy_http_version 1.1;
-           proxy_set_header Upgrade $http_upgrade;
-           proxy_set_header Connection 'upgrade';
-           proxy_set_header Host $host;
-           proxy_cache_bypass $http_upgrade;
-       }
-   }
-   ```
-
-4. Enable the configuration:
-
-   ```bash
-   sudo ln -s /etc/nginx/sites-available/patient-portal-backend /etc/nginx/sites-enabled/
-   sudo nginx -t
-   sudo systemctl restart nginx
-   ```
-
-Your backend will now be accessible via your droplet’s IP without specifying the port.
-
-###  Deploying the React Frontend using Vercel
-
-1. Go to [vercel.com](vercel.com)
+1. Go to [vercel.com](https://vercel.com)
 2. Import your Git repo
-3. Configure the build command (`npm run build`) and output folder (`dist`).
-4. Deploy. You get a domain like `your-frontend-app.vercel.app`.
+3. Configure the build command (`npm run build`) and output folder (`dist`)
+4. Add environment variable `VITE_API_BASE_URL` pointing to your backend deployment URL
+5. Deploy. You get a domain like `your-frontend-app.vercel.app`
 
-Important: In your React code, ensure your fetch calls point to your backend’s deployed URL (e.g., https://your-backend.onrender.com/api/...).
+### Deploying to DigitalOcean
+
+For a detailed guide on deploying to a DigitalOcean droplet, please refer to the deployment section in the README.
 
 ## 📄 License
 
@@ -329,4 +202,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 Developed for Dementia and Brain Health Outreach (DBHO)  
 (Kellogg NW-TVI in Partnership with NIMHANS & KaBHI)
-
