@@ -77,6 +77,7 @@ function AddQuestion() {
           >
             <MenuItem value="en">English</MenuItem>
             <MenuItem value="hi">Hindi</MenuItem>
+            <MenuItem value="kn">Kannada</MenuItem>
           </Select>
         </FormControl>
         <TextField

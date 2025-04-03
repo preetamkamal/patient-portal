@@ -1,6 +1,23 @@
 // src/components/PatientViewResponses.jsx
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Table, TableHead, TableRow, TableCell, TableBody, Alert, Card, CardContent } from '@mui/material';
+import { 
+  Box, 
+  Typography, 
+  Table, 
+  TableHead, 
+  TableRow, 
+  TableCell, 
+  TableBody, 
+  Alert, 
+  Card, 
+  CardContent,
+  Button,
+  Stack
+} from '@mui/material';
+import DownloadIcon from '@mui/icons-material/Download';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import dayjs from 'dayjs';
 
 function PatientViewResponses() {
   const [responses, setResponses] = useState([]); // array of DB rows
@@ -17,20 +34,26 @@ function PatientViewResponses() {
   const fetchAllQuestions = async () => {
     try {
       const token = localStorage.getItem('token');
-      // If you want *all* questions from both languages, remove ?lang=...
-      // Or call it twice if needed. For simplicity, let's call once with no lang filter
+      // Fetch English questions
       const res = await fetch(`${baseUrl}/api/mcqs?lang=en`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const dataEn = await res.json();
 
+      // Fetch Hindi questions
       const res2 = await fetch(`${baseUrl}/api/mcqs?lang=hi`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const dataHi = await res2.json();
+      
+      // Fetch Kannada questions
+      const res3 = await fetch(`${baseUrl}/api/mcqs?lang=kn`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const dataKn = await res3.json();
 
-      // Combine them
-      const allQuestions = [...dataEn, ...dataHi];
+      // Combine all languages
+      const allQuestions = [...dataEn, ...dataHi, ...dataKn];
 
       // Build a map: questionId -> questionText
       const qMap = {};
@@ -70,6 +93,55 @@ function PatientViewResponses() {
     }
   };
 
+  // Export a single response to Excel
+  const exportToExcel = (response) => {
+    const parsed = parseResponse(response.responses);
+    if (!parsed) return;
+    
+    const answersObj = parsed.answers || parsed;
+    const score = parsed.score !== undefined ? parsed.score : null;
+    const maxScore = parsed.maxScore !== undefined ? parsed.maxScore : null;
+    const patientInfo = parsed.patientInfo || {};
+    
+    // Create worksheet with test results
+    const worksheet = XLSX.utils.json_to_sheet([
+      { 
+        "Test Date": response.timestamp ? new Date(response.timestamp).toLocaleDateString() : "Unknown",
+        "Patient Name": patientInfo.name || "Not provided",
+        "Date of Birth": patientInfo.dob ? new Date(patientInfo.dob).toLocaleDateString() : "Not provided",
+        "Doctor Assigned": patientInfo.doctorAssigned || "Not provided",
+        "Health Worker Type": patientInfo.healthWorkerType || "Not provided",
+        "Health Worker Name": patientInfo.healthWorker || "Not provided",
+        "Score": score !== null && maxScore !== null ? `${score}/${maxScore}` : "Not available"
+      }
+    ]);
+    
+    // Add a section for individual answers
+    const answersData = Object.keys(answersObj).map(qId => {
+      return {
+        "Question ID": qId,
+        "Question": questionMap[qId] || `Question ${qId}`,
+        "Answer": answersObj[qId]
+      };
+    });
+    
+    // Add answers with a 2-row gap
+    XLSX.utils.sheet_add_json(worksheet, answersData, { origin: 'A10' });
+    
+    // Create workbook and add worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Test Results");
+    
+    // Generate Excel file and download
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    
+    // Generate filename with date
+    const testDate = response.timestamp ? new Date(response.timestamp).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+    const fileName = `MSE_Results_${testDate}.xlsx`;
+    saveAs(data, fileName);
+  };
+
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" gutterBottom>
@@ -91,9 +163,24 @@ function PatientViewResponses() {
           return (
             <Card key={r.id} variant="outlined" sx={{ mb: 2 }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Response ID: {r.id}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h6">
+                    Response ID: {r.id}
+                  </Typography>
+                  <Button 
+                    startIcon={<DownloadIcon />} 
+                    variant="outlined" 
+                    size="small"
+                    onClick={() => exportToExcel(r)}
+                  >
+                    Download Results
+                  </Button>
+                </Box>
+                
+                <Typography variant="body2" sx={{ mb: 2 }}>
+                  Submitted: {new Date(r.timestamp || Date.now()).toLocaleString()}
                 </Typography>
+                
                 {score !== null && maxScore !== null && (
                   <Typography variant="body1" sx={{ mb: 2 }}>
                     Score: {score} / {maxScore}

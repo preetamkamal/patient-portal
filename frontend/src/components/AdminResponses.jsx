@@ -266,16 +266,47 @@ function AdminResponses() {
       }
     };
     
+    // const fetchQuestions = async () => {
+    //   try {
+    //     const token = localStorage.getItem('token');
+    //     const res = await fetch(`${baseUrl}/api/mcqs?lang=en`, {
+    //       headers: { Authorization: `Bearer ${token}` }
+    //     });
+    //     const data = await res.json();
+    //     setQuestions(data);
+    //   } catch (err) {
+    //     console.error(err);
+    //   }
+    // };
     const fetchQuestions = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${baseUrl}/api/mcqs?lang=en`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        setQuestions(data);
+        
+        // Fetch questions in all languages
+        const [resEn, resHi, resKn] = await Promise.all([
+          fetch(`${baseUrl}/api/mcqs?lang=en`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch(`${baseUrl}/api/mcqs?lang=hi`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch(`${baseUrl}/api/mcqs?lang=kn`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
+        
+        // Parse all responses
+        const [dataEn, dataHi, dataKn] = await Promise.all([
+          resEn.json(),
+          resHi.json(),
+          resKn.json()
+        ]);
+        
+        // Combine questions from all languages
+        const allQuestions = [...dataEn, ...dataHi, ...dataKn];
+        setQuestions(allQuestions);
       } catch (err) {
-        console.error(err);
+        console.error('Error fetching questions:', err);
       }
     };
     

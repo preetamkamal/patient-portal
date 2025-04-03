@@ -198,6 +198,53 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                     db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url) 
             VALUES ("en", "11. Copy the design shown.", 
                     '[{"text": "0", "score": 0}, {"text": "1", "score": 1}]', "/uploads/question-21-en.png")`);
+        
+                    // Add Kannada questions
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url) 
+                        VALUES ("kn", "1. ಈಗ ಬೆಳಿಗ್ಗೆಯೋ, ಮಧ್ಯಾಹ್ನವೋ ಅಥವ ಸಂಜೆಯೋ?", ? , NULL)`, [defaultOptions]);
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url) 
+                        VALUES ("kn", "2. ಇವತ್ತು ಯಾವ ದಿನ?", ? , NULL)`, [defaultOptions]);
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url) 
+                        VALUES ("kn", "3. ಇವತ್ತಿನ ದಿನಾಂಕ ಹೇಳಿ?", ? , NULL)`, [defaultOptions]);
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url) 
+                        VALUES ("kn", "4. ಈಗ ಯಾವ ತಿಂಗಳು ನಡೀತಿದೆ ಹೇಳಿ?", ? , NULL)`, [defaultOptions]);
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url) 
+                        VALUES ("kn", "5. ಈಗ ಯಾವ ಖುತು ನಡೀತಿದೆ ಹೇಳಿ?", ? , NULL)`, [defaultOptions]);
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url) 
+                        VALUES ("kn", "6. ಯಾವ ಅಂಚೆ ಇಲಾಖೆ ಕೆಳಗೆ ಈ ಹಳ್ಳಿಯೂ ಬರುತ್ತದೆ?", ? , NULL)`, [defaultOptions]);
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url) 
+                        VALUES ("kn", "7. ಈ ಹಳ್ಳಿ ಯಾವ ಜಿಲ್ಲೆಯ ಕೆಳಗೆ ಬರುತ್ತದೆ?", ? , NULL)`, [defaultOptions]);
+
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url) 
+                        VALUES ("kn", "8. ನೀವು ಯಾವ ಗ್ರಾಮದವರು?", ? , NULL)`, [defaultOptions]);
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url) 
+                        VALUES ("kn", "9. ಯಾವ ಬ್ಲಾಕ್‌ (ಗ್ರಾಮವು ಕೇವಲ ಬ್ಲಾಕ್ಗಳನ್ನು ಹೊಂದಿದ್ದರೆ) ಅಥವಾ ಅಲ್ಲಿ ಬರೀ ಏರಿಯಾಗಳಿದ್ದರೆ ಅದನ್ನ ಕೇಳಿ ", ? , NULL)`, [defaultOptions]);
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url) 
+                        VALUES ("kn", "10. ಇದು ಯಾವ ಸ್ಥಳ?", ? , NULL)`, [defaultOptions]);
+        
+                    // For Q11 to Q18, assume options are numeric or fixed text:
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url) 
+                        VALUES ("kn", "11. ನಾನು ಡೆಲ್ಲಿಗೆ ಹೋಗಿದ್ದ. ಅಲ್ಲಿಂದ 3 ವಸ್ತುಗಳನ್ನ ತಂದೆ ಅವು ಯಾವುವೆಂದರೆ ಮಾವಿನಹಣ್ಣು, ಕುರ್ಚಿ, ನಾಣ್ಯ ( ಈ ಪದಗಳನ್ನು ನಿಧಾನಕ್ಕೆ, ಸ್ಪಷ್ಟವಾಗಿ ಒಂದು ಪದ ಓದಿದ ಮೇಲೆ 2 ಸೆಕೆಂಡ್‌ ಅಂತರ ಕೊಟ್ಟು ಮತ್ತೊದು ಪದವನ್ನು ಓದಿ) ಈಗ ಕೇಳಿ ನಾನು ಡೆಲ್ಲಿಯಿಂದ ತಂದ ಮೂರು ವಸ್ತುಗಳ ಹೆಸರು ಹೇಳಿ ನೋಡೋಣ? ", '[{"text": "0", "score": 0},{"text": "1", "score": 1}, {"text": "2", "score": 2}, {"text": "3", "score": 3}]', NULL)`);
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url)
+                        VALUES ("kn", "12.ವಾರದಲ್ಲಿ ಬರುವ ದಿನಗಳ ಹೆಸರನ್ನು ಉಲ್ಟಾ ಕ್ರಮದಲ್ಲಿ ಹೇಳುವುದು.", '[{"text": "0", "score": 0},{"text": "1", "score": 1}, {"text": "2", "score": 2}, {"text": "3", "score": 3}, {"text": "4", "score": 4}, {"text": "5", "score": 5}]', NULL)`);
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url)
+                        VALUES ("kn", "13. ನಾನು ದೆಹಲಿಯಿಂದ ತಂದಿರುವ ಮೂರು ವಸ್ತುಗಳ ಹೆಸರೇನು?", '[{"text": "0", "score": 0},{"text": "1", "score": 1}, {"text": "2", "score": 2}, {"text": "3", "score": 3}, {"text": "4", "score": 4}, {"text": "5", "score": 5}]', NULL)`);
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url)
+                        VALUES ("kn", "14. ಕೈಗಡಿಯಾರ ಮತ್ತು ಪೆನ್ನು ತೋರಿಸಿ. ಈ ವಸ್ತುಗಳ ಹೆಸರುಗಳನ್ನು ನೀವು ನನಗೆ ಹೇಳಬಹುದೇ?", '[{"text": "0", "score": 0},{"text": "1", "score": 1}, {"text": "2", "score": 2}]', NULL)`);
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url)
+                        VALUES ("kn", "15. ವಾಕ್ಯಗಳ ಪುನರಾವರ್ತನ: ನಾನೀಗ ನಿಮಗೆ ಏನೋ ಹೇಳುತ್ತೇನೆ, ಗಮನವಿಟ್ಟು ಅದನ್ನ ಕೇಳಿಸಿಕೊಳ್ಳಿ. ನಾನು ಹೇಳಿ ಮುಗಿಸಿದ ನಂತರ ನೀವದನ್ನು ನಾನು ಹೇಳಿದಂತೆಯೇ ಹೇಳಬೇಕು ನುಡಿಗಟ್ಟು- 'ಇದು ಅಲ್ಲ ಅದು ಅಲ್ಲ'", '[{"text": "Correct", "score": 1}, {"text": "Wrong", "score": 0}]', NULL)`);
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url)
+                        VALUES ("kn", "16. ಈಗ ನನ್ನ ಮುಖವನ್ನು ನೋಡಿ ಮತ್ತು ನಾನು ಮಾಡುವಂತೆಯೇ ಮಾಡಿ. 'ನಿಮ್ಮ ಕಣ್ಣುಗಳನ್ನು ಮುಚ್ಚಿ' ", '[{"text": "Correct", "score": 1}, {"text": "Wrong", "score": 0}]', NULL)`);
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url)
+                        VALUES ("kn", "17. ಮೊದಲು ನೀವು ನಿಮ್ಮ ಬಲಗೈಯಲ್ಲಿ ಕಾಗದವನ್ನು ತೆಗೆದುಕೊಂಡು ನಂತರ ನಿಮ್ಮ ಎರಡೂ ಕೈಗಳಿಂದ ಅದನ್ನು ಅರ್ಧಕ್ಕೆ ಮಡಚಿ ನಂತರ ಕಾಗದವನ್ನು ನನಗೆ ವಾಪಸ್‌ ನೀಡಿ", '[{"text": "0", "score": 0},{"text": "1", "score": 1}, {"text": "2", "score": 2}, {"text": "3", "score": 3}]', NULL)`);
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url)
+                        VALUES ("kn", "18. ನಿಮ್ಮ ಮನೆಯ ಬಗ್ಗೆ ಒಂದು ವಾಕ್ಯದಲ್ಲಿ ಹೇಳಿ", '[{"text": "Correct", "score": 1}, {"text": "Wrong", "score": 0}]', NULL)`);
+                    db.run(`INSERT OR IGNORE INTO questions (language, question_text, options, image_url)
+                        VALUES ("kn", "19. ಈ ಚಿತ್ರವನ್ನು ನಕಲು ಮಾಡಿ 
+                        Score: Must draw two four sided figure = 1 
+                        One figure should be mostly inside the other = 2 
+                        Orientation of the figures should be appropriate = 3", '[{"text": "0", "score": 0},{"text": "1", "score": 1}, {"text": "2", "score": 2}, {"text": "3", "score": 3}]', "/uploads/question-19-kn.png")`);
+      
                 } else {
                     console.log("Questions table already has data. Skipping default question insertion.");
                 }

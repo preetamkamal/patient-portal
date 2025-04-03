@@ -292,7 +292,10 @@ function PatientMCQ() {
           English
         </Button>
         <Button variant={language === 'hi' ? 'contained' : 'outlined'} onClick={() => setLanguage('hi')}>
-          Hindi
+          हिंदी
+        </Button>
+        <Button variant={language === 'kn' ? 'contained' : 'outlined'} onClick={() => setLanguage('kn')}>
+          ಕನ್ನಡ
         </Button>
       </Stack>
       
