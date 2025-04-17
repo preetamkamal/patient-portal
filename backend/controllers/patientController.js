@@ -27,7 +27,10 @@ exports.login = (req, res) => {
           dob: row.dob,
           doctorAssigned: row.doctor_assigned,
           healthWorker: row.health_worker,
-          healthWorkerType: row.health_worker_type
+          healthWorkerType: row.health_worker_type,
+          phoneNumber: row.phone_number,
+          testLocation: row.test_location,
+          uid: row.uid
         }, 
         token 
       });
@@ -42,7 +45,7 @@ exports.login = (req, res) => {
 // Get patient profile
 exports.getProfile = (req, res) => {
   const patientId = req.user.id;
-  const query = 'SELECT id, email, name, dob, doctor_assigned, health_worker, health_worker_type FROM patients WHERE id = ?';
+  const query = 'SELECT id, email, name, dob, doctor_assigned, health_worker, health_worker_type, phone_number, test_location, uid FROM patients WHERE id = ?';
   
   db.get(query, [patientId], (err, row) => {
     if (err) return res.status(500).json({ error: 'Database error' });
@@ -58,17 +61,20 @@ exports.getProfile = (req, res) => {
 // Update patient profile
 exports.updateProfile = (req, res) => {
   const patientId = req.user.id;
-  const { name, dob, doctorAssigned, healthWorker, healthWorkerType } = req.body;
+  const { name, dob, doctorAssigned, healthWorker, healthWorkerType, phoneNumber, testLocation, uid } = req.body;
   
   const query = `UPDATE patients SET 
     name = ?, 
     dob = ?, 
     doctor_assigned = ?, 
     health_worker = ?, 
-    health_worker_type = ? 
+    health_worker_type = ?,
+    phone_number = ?,
+    test_location = ?,
+    uid = ?
     WHERE id = ?`;
   
-  db.run(query, [name, dob, doctorAssigned, healthWorker, healthWorkerType, patientId], function(err) {
+  db.run(query, [name, dob, doctorAssigned, healthWorker, healthWorkerType, phoneNumber, testLocation, uid, patientId], function(err) {
     if (err) return res.status(500).json({ error: 'Database error: ' + err.message });
     if (this.changes === 0) return res.status(404).json({ error: 'Patient not found or no changes made' });
     

@@ -14,7 +14,10 @@ function PatientInfoForm({ onSubmit, onCancel, previousInfo }) {
     testDate: dayjs(), // Initialize with dayjs object
     doctorAssigned: '',
     healthWorker: '',
-    healthWorkerType: 'AASHA'
+    healthWorkerType: 'AASHA',
+    phoneNumber: '',
+    testLocation: '',
+    uid: ''
   });
 
   // Function to auto-fill form with previous info
@@ -24,7 +27,11 @@ function PatientInfoForm({ onSubmit, onCancel, previousInfo }) {
       const updatedInfo = {
         ...previousInfo,
         dob: previousInfo.dob ? (typeof previousInfo.dob === 'string' ? dayjs(previousInfo.dob) : previousInfo.dob) : dayjs(),
-        testDate: dayjs() // Always use current date for test date
+        testDate: dayjs(), // Always use current date for test date
+        // Preserve other fields if they exist
+        phoneNumber: previousInfo.phoneNumber || '',
+        testLocation: previousInfo.testLocation || '',
+        uid: previousInfo.uid || ''
       };
       setPatientInfo(updatedInfo);
     }
@@ -81,6 +88,18 @@ function PatientInfoForm({ onSubmit, onCancel, previousInfo }) {
               onChange={handleChange}
             />
           </Grid>
+
+          {/* UID field */}
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="UID (Aadhaar Number, etc.)"
+              name="uid"
+              value={patientInfo.uid}
+              onChange={handleChange}
+              helperText="Optional unique identifier"
+            />
+          </Grid>
           
           <Grid item xs={12} md={6}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -102,6 +121,30 @@ function PatientInfoForm({ onSubmit, onCancel, previousInfo }) {
                 slotProps={{ textField: { fullWidth: true, required: true } }}
               />
             </LocalizationProvider>
+          </Grid>
+
+          {/* Phone Number field */}
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="Phone Number"
+              name="phoneNumber"
+              value={patientInfo.phoneNumber}
+              onChange={handleChange}
+              inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+            />
+          </Grid>
+
+          {/* Location of Test field */}
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="Location of Test"
+              name="testLocation"
+              value={patientInfo.testLocation}
+              onChange={handleChange}
+              placeholder="e.g., Hospital, Clinic, Home"
+            />
           </Grid>
           
           <Grid item xs={12}>

@@ -81,7 +81,7 @@ function Login() {
                   label="Role"
                   onChange={(e) => setRole(e.target.value)}
                 >
-                  <MenuItem value="patient">Patient</MenuItem>
+                  <MenuItem value="patient">KABHI/CHO/AASHA</MenuItem>
                   <MenuItem value="admin">Admin</MenuItem>
                 </Select>
               </FormControl>

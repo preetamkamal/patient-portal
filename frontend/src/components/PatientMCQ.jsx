@@ -171,7 +171,10 @@ function PatientMCQ() {
             dob: data.profile.dob ? dayjs(data.profile.dob) : dayjs(),
             doctorAssigned: data.profile.doctor_assigned || '',
             healthWorker: data.profile.health_worker || '',
-            healthWorkerType: data.profile.health_worker_type || 'AASHA'
+            healthWorkerType: data.profile.health_worker_type || 'AASHA',
+            phoneNumber: data.profile.phone_number || '',
+            testLocation: data.profile.test_location || '',
+            uid: data.profile.uid || ''
           };
           
           setPreviousPatientInfo(profile);
@@ -204,7 +207,10 @@ function PatientMCQ() {
           dob: info.dob.format('YYYY-MM-DD'),
           doctorAssigned: info.doctorAssigned,
           healthWorker: info.healthWorker,
-          healthWorkerType: info.healthWorkerType
+          healthWorkerType: info.healthWorkerType,
+          phoneNumber: info.phoneNumber,
+          testLocation: info.testLocation,
+          uid: info.uid
         })
       });
       
@@ -226,12 +232,15 @@ function PatientMCQ() {
     const worksheet = XLSX.utils.json_to_sheet([
       { 
         "Patient Name": patientInfo.name,
+        "UID": patientInfo.uid || "Not provided",
+        "Phone Number": patientInfo.phoneNumber || "Not provided",
         "Date of Birth": patientInfo.dob ? patientInfo.dob.format('MM/DD/YYYY') : "Not provided",
         "Test Date": patientInfo.testDate ? patientInfo.testDate.format('MM/DD/YYYY') : new Date().toLocaleDateString(),
+        "Location of Test": patientInfo.testLocation || "Not provided",
         "Doctor Assigned": patientInfo.doctorAssigned,
         "Health Worker Type": patientInfo.healthWorkerType,
         "Health Worker Name": patientInfo.healthWorker,
-        "Language": language === 'en' ? 'English' : 'Hindi',
+        "Language": language === 'en' ? 'English' : (language === 'hi' ? 'Hindi' : 'Kannada'),
         "Final Score": scoreInfo ? `${scoreInfo.score}/${scoreInfo.maxScore}` : "Not available"
       }
     ]);
@@ -297,6 +306,12 @@ function PatientMCQ() {
         <Button variant={language === 'kn' ? 'contained' : 'outlined'} onClick={() => setLanguage('kn')}>
           ಕನ್ನಡ
         </Button>
+        {submitted && (
+          <Button onClick={handleNewTest} variant="contained"
+          color="success"  size="large">
+          Take New Test
+        </Button>
+        )}
       </Stack>
       
       {submitted ? (
@@ -314,13 +329,9 @@ function PatientMCQ() {
                   Edit Response
                 </Button>
               )}
-              <Button onClick={handleNewTest} variant="outlined" size="small">
-                Take New Test
-              </Button>
               <Button 
                 onClick={exportToExcel} 
-                variant="contained" 
-                color="success" 
+                variant="outlined" 
                 size="small"
               >
                 Download Results (Excel)

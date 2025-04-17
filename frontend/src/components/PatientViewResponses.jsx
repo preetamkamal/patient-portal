@@ -108,7 +108,10 @@ function PatientViewResponses() {
       { 
         "Test Date": response.timestamp ? new Date(response.timestamp).toLocaleDateString() : "Unknown",
         "Patient Name": patientInfo.name || "Not provided",
+        "UID": patientInfo.uid || "Not provided",
+        "Phone Number": patientInfo.phoneNumber || "Not provided",
         "Date of Birth": patientInfo.dob ? new Date(patientInfo.dob).toLocaleDateString() : "Not provided",
+        "Location of Test": patientInfo.testLocation || "Not provided",
         "Doctor Assigned": patientInfo.doctorAssigned || "Not provided",
         "Health Worker Type": patientInfo.healthWorkerType || "Not provided",
         "Health Worker Name": patientInfo.healthWorker || "Not provided",

@@ -173,14 +173,37 @@ patient-portal/
 
 ## 📦 Deployment
 
+### Database Persistence
+
+To ensure your database data persists across deployments and app restarts:
+
+1. Set the `DATA_DIR` environment variable to a directory path outside your deployment folder:
+   ```
+   DATA_DIR=/path/to/persistent/storage
+   ```
+
+2. Optionally, you can also set a custom database filename:
+   ```
+   DB_FILENAME=patient_portal_db.sqlite
+   ```
+
+3. For cloud deployments, use a volume or persistent storage service:
+   - On Render.com: Add a persistent disk and set DATA_DIR to that mount path
+   - On DigitalOcean: Use a volume mount
+   - On other platforms: Configure according to their persistent storage options
+
 ### Deploying the Node Backend using [Render.com](https://render.com)
 
 1. Sign up for a [Render.com](https://render.com) account
 2. Create a new Web Service on Render.com
 3. Link to your GitHub repository
 4. Specify the build command (`npm install`) and start command (`npm start` or `node server.js`)
-5. Add environment variables (e.g. `JWT_SECRET`, `PORT=5011`)
-6. Deploy. Render gives you a free domain like [your-backend.onrender.com](https://your-backend.onrender.com)
+5. Add environment variables:
+   - `JWT_SECRET` (your secure secret key)
+   - `PORT=5011` 
+   - `DATA_DIR=/data` (this is Render's persistent disk path)
+6. Add a persistent disk to your Render service (in the Disks section)
+7. Deploy. Render gives you a free domain like [your-backend.onrender.com](https://your-backend.onrender.com)
 
 ### Deploying the React Frontend using Vercel
 
@@ -192,7 +215,18 @@ patient-portal/
 
 ### Deploying to DigitalOcean
 
-For a detailed guide on deploying to a DigitalOcean droplet, please refer to the deployment section in the README.
+For a detailed guide on deploying to a DigitalOcean droplet:
+
+1. Create a new droplet with your preferred OS (Ubuntu recommended)
+2. SSH into your droplet
+3. Install Node.js and npm
+4. Clone your repository
+5. Set up environment variables including `DATA_DIR=/var/lib/patient-portal-data`
+6. Create the data directory: `mkdir -p /var/lib/patient-portal-data && chmod 755 /var/lib/patient-portal-data`
+7. Install PM2: `npm install -g pm2`
+8. Use PM2 to start your application: `pm2 start npm --name "patient-portal" -- start`
+9. Set up Nginx as a reverse proxy to your Node application
+10. Set up SSL with Let's Encrypt for HTTPS
 
 ## 📄 License
 
